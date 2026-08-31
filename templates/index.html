@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Predictor | Student Career Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1>Placement AI Predictor</h1>
+                    <p class="subtitle">Machine Learning Powered Campus Placement Analytics</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <div class="system-status">
+                    <span class="status-indicator online"></span>
+                    <span>System Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Quick Presets Bar -->
+        <div class="presets-bar">
+            <span class="presets-label"><i class="fa-solid fa-bolt text-warning"></i> Quick Profile Presets:</span>
+            <button type="button" class="preset-btn" onclick="loadPreset('high')">
+                <i class="fa-solid fa-star text-success"></i> High Achiever
+            </button>
+            <button type="button" class="preset-btn" onclick="loadPreset('average')">
+                <i class="fa-solid fa-user-graduate text-primary"></i> Average Profile
+            </button>
+            <button type="button" class="preset-btn" onclick="loadPreset('atrisk')">
+                <i class="fa-solid fa-triangle-exclamation text-danger"></i> Needs Improvement
+            </button>
+        </div>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Left Side: Input Form Card -->
+            <section class="card input-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-sliders"></i> Student Credentials & Skills</h2>
+                    <p>Provide academic details, skill ratings, and experience to generate prediction.</p>
+                </div>
+
+                <form id="prediction-form" class="form-grid">
+
+                    <!-- Dataset Student Selector -->
+                    <div class="form-section full-width dataset-picker-section">
+                        <div class="section-header-flex">
+                            <h3 class="section-title"><i class="fa-solid fa-database"></i> Pick Student from Cleaned Dataset</h3>
+                            <span class="dataset-badge"><i class="fa-solid fa-circle-check"></i> 48,250 Clean Records</span>
+                        </div>
+                        <div class="picker-controls">
+                            <!-- Direct Student ID Search -->
+                            <div class="search-id-wrapper">
+                                <input type="number" id="student-id-input" min="1" max="50000" placeholder="Type Student ID (1 - 50000)" class="form-control">
+                                <button type="button" id="btn-load-id" class="btn-primary btn-icon-text">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Load ID
+                                </button>
+                            </div>
+
+                            <span class="picker-divider">OR</span>
+
+                            <!-- Dropdown Select -->
+                            <div class="select-wrapper picker-select-wrapper">
+                                <select id="student-picker" class="form-control">
+                                    <option value="">-- Choose Profile from List --</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-icon"></i>
+                            </div>
+
+                            <button type="button" id="btn-random-student" class="btn-secondary btn-icon-text">
+                                <i class="fa-solid fa-shuffle"></i> Random Pick
+                            </button>
+                        </div>
+                        <div id="picker-error" class="error-feedback" style="display: none;"></div>
+                    </div>
+
+                    <!-- Academic Details -->
+                    <div class="form-section">
+                        <div class="section-header-flex">
+                            <h3 class="section-title"><i class="fa-solid fa-book-open"></i> Academic Standing</h3>
+                            <span class="weight-tag">30% Weight</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="stream">Academic Stream / Branch</label>
+                            <div class="select-wrapper">
+                                <select id="stream" name="stream" class="form-control">
+                                    <option value="Computer Science">Computer Science / IT</option>
+                                    <option value="Electronics & Communication">Electronics & Communication</option>
+                                    <option value="Electrical Engineering">Electrical Engineering</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Data Science / AI">Data Science / Artificial Intelligence</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-with-value">
+                                <label for="cgpa">Cumulative CGPA (0.0 - 10.0)</label>
+                                <span class="badge-value" id="val-cgpa">8.2</span>
+                            </div>
+                            <input type="range" id="cgpa" name="cgpa" min="4.0" max="10.0" step="0.1" value="8.2" class="slider">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-with-value">
+                                <label for="backlogs">Active Backlogs / Arrears</label>
+                                <span class="badge-value warning" id="val-backlogs">0</span>
+                            </div>
+                            <input type="range" id="backlogs" name="backlogs" min="0" max="8" step="1" value="0" class="slider">
+                        </div>
+                    </div>
+
+                    <!-- Technical & Aptitude Skills -->
+                    <div class="form-section">
+                        <div class="section-header-flex">
+                            <h3 class="section-title"><i class="fa-solid fa-code"></i> Skills Assessment</h3>
+                            <span class="weight-tag">55% Weight Total</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-with-value">
+                                <label for="coding_score">Coding & DSA Rating (25%)</label>
+                                <span class="badge-value" id="val-coding_score">75</span>
+                            </div>
+                            <input type="range" id="coding_score" name="coding_score" min="0" max="100" step="1" value="75" class="slider">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-with-value">
+                                <label for="aptitude_score">Aptitude & Logic (15%)</label>
+                                <span class="badge-value" id="val-aptitude_score">70</span>
+                            </div>
+                            <input type="range" id="aptitude_score" name="aptitude_score" min="0" max="100" step="1" value="70" class="slider">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-with-value">
+                                <label for="soft_skills">Soft Skills & Communication (15%)</label>
+                                <span class="badge-value" id="val-soft_skills">80</span>
+                            </div>
+                            <input type="range" id="soft_skills" name="soft_skills" min="0" max="100" step="1" value="80" class="slider">
+                        </div>
+                    </div>
+
+                    <!-- Experience & Portfolio -->
+                    <div class="form-section full-width">
+                        <div class="section-header-flex">
+                            <h3 class="section-title"><i class="fa-solid fa-briefcase"></i> Portfolio & Practical Exposure</h3>
+                            <span class="weight-tag">15% Weight</span>
+                        </div>
+                        
+                        <div class="three-col-grid">
+                            <div class="form-group">
+                                <label for="internships">Internships Count</label>
+                                <div class="number-input-group">
+                                    <button type="button" class="btn-num" onclick="adjustValue('internships', -1)">-</button>
+                                    <input type="number" id="internships" name="internships" value="1" min="0" max="10" readonly>
+                                    <button type="button" class="btn-num" onclick="adjustValue('internships', 1)">+</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="projects">Major Projects</label>
+                                <div class="number-input-group">
+                                    <button type="button" class="btn-num" onclick="adjustValue('projects', -1)">-</button>
+                                    <input type="number" id="projects" name="projects" value="3" min="0" max="10" readonly>
+                                    <button type="button" class="btn-num" onclick="adjustValue('projects', 1)">+</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="work_experience">Work Exp. (Years)</label>
+                                <div class="number-input-group">
+                                    <button type="button" class="btn-num" onclick="adjustValue('work_experience', -0.5)">-</button>
+                                    <input type="number" id="work_experience" name="work_experience" value="0.5" min="0" max="5" step="0.5" readonly>
+                                    <button type="button" class="btn-num" onclick="adjustValue('work_experience', 0.5)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions full-width">
+                        <button type="submit" id="btn-submit" class="btn-primary">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Placement Likelihood
+                        </button>
+                        <button type="button" id="btn-reset" class="btn-secondary">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Side: Dashboard & Predictions Output Card -->
+            <section class="card output-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Placement Analytics & Results</h2>
+                    <p>Live ML predictive outcome based on student metrics.</p>
+                </div>
+
+                <div class="output-body">
+                    <!-- Gauge Container -->
+                    <div class="gauge-card">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 160 160">
+                                <circle class="gauge-bg" cx="80" cy="80" r="70"></circle>
+                                <circle class="gauge-fill" id="gauge-fill" cx="80" cy="80" r="70"></circle>
+                            </svg>
+                            <div class="gauge-content">
+                                <span class="gauge-value" id="res-probability">0%</span>
+                                <span class="gauge-label">Placement Likelihood</span>
+                            </div>
+                        </div>
+                        <div id="res-status-badge" class="status-badge success">Ready to Analyze</div>
+                        <p id="res-summary" class="summary-text">Adjust credentials on the left and hit 'Predict Placement Likelihood' to view your instant placement report.</p>
+                    </div>
+
+                    <!-- Actual CSV Dataset Outcome Badge -->
+                    <div id="actual-outcome-card" class="actual-outcome-card" style="display: none;">
+                        <div class="actual-outcome-header">
+                            <span><i class="fa-solid fa-file-csv"></i> Actual Dataset Benchmark</span>
+                            <span class="benchmark-tag">Ground Truth</span>
+                        </div>
+                        <div class="actual-outcome-body">
+                            <div class="outcome-detail">
+                                <span class="outcome-label">Student ID:</span>
+                                <strong id="actual-student-id">#--</strong>
+                            </div>
+                            <div class="outcome-detail">
+                                <span class="outcome-label">Placement Status:</span>
+                                <span id="actual-status" class="outcome-tag">--</span>
+                            </div>
+                            <div class="outcome-detail">
+                                <span class="outcome-label">Salary Package:</span>
+                                <strong id="actual-salary">0.00 LPA</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown & Progress Bars -->
+                    <div class="breakdown-card">
+                        <h3><i class="fa-solid fa-layer-group"></i> Profile Competency Breakdown</h3>
+                        
+                        <div class="competency-item">
+                            <div class="comp-label">
+                                <span>Academic Standing (CGPA)</span>
+                                <span id="comp-academic">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="bar-academic" style="width: 0%;"></div></div>
+                        </div>
+
+                        <div class="competency-item">
+                            <div class="comp-label">
+                                <span>Coding & DSA Score</span>
+                                <span id="comp-coding">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="bar-coding" style="width: 0%;"></div></div>
+                        </div>
+
+                        <div class="competency-item">
+                            <div class="comp-label">
+                                <span>Aptitude & Logic</span>
+                                <span id="comp-aptitude">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="bar-aptitude" style="width: 0%;"></div></div>
+                        </div>
+
+                        <div class="competency-item">
+                            <div class="comp-label">
+                                <span>Practical Experience</span>
+                                <span id="comp-practical">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="bar-practical" style="width: 0%;"></div></div>
+                        </div>
+
+                        <div class="competency-item">
+                            <div class="comp-label">
+                                <span>Communication & Soft Skills</span>
+                                <span id="comp-communication">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="bar-communication" style="width: 0%;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Actionable Recommendations -->
+                    <div class="recommendation-card">
+                        <h3><i class="fa-solid fa-lightbulb"></i> Actionable Growth Recommendations</h3>
+                        <ul id="recommendation-list" class="rec-list">
+                            <li><i class="fa-solid fa-circle-check text-success"></i> Click 'Predict Placement Likelihood' to generate personalized career insights.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Placement Prediction System &bull; Intelligent Student Placement Analytics &bull; Flask ML Engine</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
