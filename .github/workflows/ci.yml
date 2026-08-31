@@ -1,0 +1,50 @@
+name: Python CI & Health Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Verify Data Cleaning Pipeline
+      run: |
+        python clean_dataset.py
+
+    - name: Run Smoke Test on Flask Application
+      run: |
+        python -c "
+        import app
+        with app.app.test_client() as client:
+            res = client.get('/api/health')
+            assert res.status_code == 200, f'Health check failed: {res.status_code}'
+            print('Health check passed:', res.get_json())
+            
+            predict_res = client.post('/predict', json={
+                'cgpa': 8.5,
+                'coding_score': 80,
+                'aptitude_score': 75,
+                'internships': 1,
+                'projects': 2,
+                'soft_skills': 70,
+                'backlogs': 0
+            })
+            assert predict_res.status_code == 200, f'Prediction failed: {predict_res.status_code}'
+            print('Prediction test passed:', predict_res.get_json())
+        "
